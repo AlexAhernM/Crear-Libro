@@ -1,7 +1,7 @@
 import pandas as pd
 from openpyxl.styles import Alignment
 from buscar_atras import buscar_datos_nave_hacia_atras
-from encabezados import (formato_fecha, formato_dec, formato_entero, 
+from estilos import (formato_fecha, formato_dec, formato_entero, 
                          border_horizontal, border_completo, sin_bordes,  
                          relleno_rosa, relleno_celeste, relleno_gris, relleno_amarillo, 
                          fuente_liviana, alineacion_sangria, fuente_resultados, fuente_datos)
@@ -113,8 +113,7 @@ def crear_hojas(wb, df_filtrado, df,  col_nave, col_trg, col_loa, col_servicio, 
                 ws.cell(row=19, column=4, value="Hr")
                 ws.cell(row=20, column=4, value="Hr")      
 
-                c_loa = ws.cell(row=7, column=3, value=float(row[col_loa]))
-                c_loa.number_format = formato_dec
+               
                 # LOA
                 ws.cell(row=7, column=2, value="LOA")
 
@@ -192,7 +191,6 @@ def crear_hojas(wb, df_filtrado, df,  col_nave, col_trg, col_loa, col_servicio, 
                 
                 cobre_met = pd.to_numeric(row[col_cu_met], errors="coerce")
                 cobre_met = int(0 if pd.isna(cobre_met) else cobre_met)
-                print ("COBRE =", cobre_met, "toneladas", ton_val)
                 
                 #break bulk
                 break_bulk = pd.to_numeric(row[col_break], errors="coerce")
@@ -262,7 +260,6 @@ def crear_hojas(wb, df_filtrado, df,  col_nave, col_trg, col_loa, col_servicio, 
                 ws.cell(row=22, column=2, value="Colacion")
                 ws.cell(row=23, column=2, value="Descanso Legal Amanecida")
                 ws.cell(row=24, column=2, value="Tiempo Muerto Remate")
-                ws.cell(row=25, column=2, value="Espera de carga / camiones")
                 ws.cell(row=25, column=2, value="Draft")
                 ws.cell(row=26, column=2, value="Inspeccion de Bodegas")
                 ws.cell(row=27, column=2, value="")

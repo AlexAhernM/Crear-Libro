@@ -1,15 +1,12 @@
 from openpyxl import Workbook
-from openpyxl.styles import Font, Alignment, Border, Side, PatternFill
+from openpyxl.styles import Font, Alignment, Border, Side
 from tkinter import messagebox
 import pandas as pd
 from datetime import datetime
-from buscar_atras import buscar_datos_nave_hacia_atras
 from ruta_salida import obtener_ruta_salida
-from encabezados import (formato_fecha, formato_dec, formato_entero, 
-                         border_horizontal, border_completo, sin_bordes,  
-                         relleno_rosa, relleno_celeste, relleno_gris, relleno_amarillo, 
-                         fuente_liviana, alineacion_sangria, fuente_resultados, fuente_datos)
-from encabezados import crear_encabezados
+from estilos import (formato_fecha, formato_dec, formato_entero, 
+                         border_horizontal, border_completo, relleno_gris)
+from encabezados import crear_encabezados, obtener_columnas
 from excel_sheets import crear_hojas
 def procesar_datos(entry_archivo, entry_destino, entry_fin, entry_inicio):
     ruta_input = entry_archivo.get()
@@ -29,23 +26,24 @@ def procesar_datos(entry_archivo, entry_destino, entry_fin, entry_inicio):
         # Cargar Excel (Asumiendo que no tiene encabezados o detectándolos)
         df = pd.read_excel(ruta_input)
         
-        # Mapeo de columnas (A=0, C=2, ...etc)
-        col_nave = df.columns[2]
-        col_servicio = df.columns[4]
-        col_tipo_nave = df.columns[5]
-        col_term = df.columns[6]
-        col_sitio = df.columns[7]
-        col_loa = df.columns[9]
-        col_trg = df.columns[11]
-        col_atraque = df.columns[12]
-        col_desatraque = df.columns[13]
-        col_ton = df.columns[31]
-        col_xs = df.columns[53]
-        col_cu_met = df.columns[56]
-        col_zn = df.columns[57]
-        col_cu = df.columns[59]
-        col_cs = df.columns[61]
-        col_break = df.columns[64]
+        cols = obtener_columnas(df)
+
+        col_nave = cols["nave"]
+        col_servicio = cols["servicio"]
+        col_tipo_nave = cols["tipo_nave"]
+        col_term = cols["term"]
+        col_sitio = cols["sitio"]
+        col_loa = cols["loa"]
+        col_trg = cols["trg"]
+        col_atraque = cols["atraque"]
+        col_desatraque = cols["desatraque"]
+        col_ton = cols["ton"]
+        col_cu_met = cols["cu_met"]
+        col_zn = cols["zn"]
+        col_cu = cols["cu"]
+        col_cs = cols["cs"]
+        col_break = cols["break"]
+
         
         # Convertir columna de atraque a datetime
         df[col_atraque] = pd.to_datetime(df[col_atraque],  dayfirst=True,   # Indica que el día va primero (dd/mm/aaaa)
@@ -82,67 +80,42 @@ def procesar_datos(entry_archivo, entry_destino, entry_fin, entry_inicio):
         hojas_naves = crear_hojas(wb, df_filtrado, df,  col_nave, col_trg, col_loa, col_servicio, col_sitio, col_atraque, col_desatraque,
                 col_tipo_nave, col_ton, col_cs, col_cu_met, col_break, col_zn, col_cu)
 
+        referencias_res = [
+                            (2, None, None),          # Nº
+                            (3, "C3", None),          # Nave
+                            (4, "C6", None),          # Tipo Nave
+                            (5, "C8", formato_entero),
+                            (6, "C9", None),
+                            (7, "C11", formato_fecha),
+                            (8, "C12", formato_fecha),
+                            (9, "C14", formato_dec),
+                            (10, "C18", formato_dec),
+                            (11, "C17", formato_dec),
+                            (12, "C19", formato_dec),
+                            (13, "C20", formato_dec),
+                            (14, "C43", formato_dec),
+                            (15, "C45", formato_dec),
+                            (16, "C16", formato_entero),
+                            (17, "C47", formato_dec),
+                            (18, "G16", None),
+                        ]
         
-
         fila_res = 2
 
         for nombre_hoja in hojas_naves:
             ref_hoja = f"'{nombre_hoja}'"
-
-            ws_res.cell(row=fila_res, column=2, value=fila_res-1)
-            ws_res.cell(row=fila_res, column=3, value=f"={ref_hoja}!C3") #Nombre Nave
-            ws_res.cell(row=fila_res, column=4, value=f"={ref_hoja}!C6") #Tipo Nave
             
-            trg = ws_res.cell(row=fila_res, column=5, value=f"={ref_hoja}!C8") #TRG
-            trg.number_format = formato_entero
-            trg.alignment = Alignment(horizontal="center", vertical="center")
+            for col_res, celda_origen, formato in referencias_res:
+                if col_res == 2:
+                    celda = ws_res.cell(row=fila_res, column=col_res, value=fila_res - 1)
+                else:
+                    celda = ws_res.cell(row=fila_res, column=col_res, value=f"={ref_hoja}!{celda_origen}")
 
-            sitio= ws_res.cell(row=fila_res, column=6, value=f"={ref_hoja}!C9") #Sitio
-            sitio.alignment = Alignment(horizontal="center", vertical="center")
+                if formato:
+                    celda.number_format = formato
 
-            p_espia= ws_res.cell(row=fila_res, column=7, value=f"={ref_hoja}!C11") #Primera Espia
-            p_espia.number_format = formato_fecha
-            u_espia= ws_res.cell(row=fila_res, column=8, value=f"={ref_hoja}!C12") #Ultima Espia
-            u_espia.number_format = formato_fecha
-            # REVISAR
-            t_oc= ws_res.cell(row=fila_res, column=9, value=f"={ref_hoja}!C14") #T.O.
-            t_oc.number_format = formato_dec
-            t_oc.alignment = Alignment(horizontal="center", vertical="center")
-
-            b_dom= ws_res.cell(row=fila_res, column=10, value=f"={ref_hoja}!C18") #B.Dom
-            b_dom.number_format = formato_dec
-            b_dom.alignment = Alignment(horizontal="center", vertical="center")
-
-            f_rend = ws_res.cell(row=fila_res, column=11, value=f"={ref_hoja}!C17") # F. Rend
-            f_rend.number_format = formato_dec
-            f_rend.alignment = Alignment(horizontal="center", vertical="center")
-
-            tom= ws_res.cell(row=fila_res, column=12, value=f"={ref_hoja}!C19") #TOM
-            tom.number_format = formato_dec
-            tom.alignment = Alignment(horizontal="center", vertical="center")
-
-            tnt= ws_res.cell(row=fila_res, column=13, value=f"={ref_hoja}!C20") #TNT
-            tnt.number_format = formato_dec
-            tnt.alignment = Alignment(horizontal="center", vertical="center")
-
-
-            gap= ws_res.cell(row=fila_res, column=14, value=f"={ref_hoja}!C43") #GAP
-            gap.number_format = formato_dec
-            gap.alignment = Alignment(horizontal="center", vertical="center")
-
-            multa= ws_res.cell(row=fila_res, column=15, value=f"={ref_hoja}!C45") #"Multa Inicial"
-            multa.number_format = formato_dec
-            multa.alignment = Alignment(horizontal="center", vertical="center")
-
-            ton= ws_res.cell(row=fila_res, column=16, value=f"={ref_hoja}!C16") # Ton
-            ton.number_format = formato_entero
-            ton.alignment = Alignment(horizontal="center", vertical="center")
-
-            vel = ws_res.cell(row=fila_res, column=17, value=f"={ref_hoja}!C47") # Vel
-            vel.number_format = formato_dec
-            vel.alignment = Alignment(horizontal="center", vertical="center")
-
-            ws_res.cell(row=fila_res, column=18, value=f"={ref_hoja}!G16") #TIPO CARGA
+                celda.alignment = Alignment(horizontal="center", vertical="center")
+            
 
             fila_res += 1
         ultima_fila_res = ws_res.max_row
