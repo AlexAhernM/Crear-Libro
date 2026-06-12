@@ -177,7 +177,6 @@ def crear_hojas(wb, df_filtrado, df,  col_nave, col_trg, col_loa, col_servicio, 
                 
                 # Paso 1: Convertir a número de forma segura (evita el error de base 10)
                 tipo_nave_val = pd.to_numeric(row[col_tipo_nave], errors='coerce')
-                #deseo que ceniza_soda sea numero decimal ¿como lo hago?
                 tipo_nave_val = int(0 if pd.isna(tipo_nave_val) else tipo_nave_val) # Si es vacío, asume 0
 
                 ceniza_soda = pd.to_numeric(row[col_cs], errors='coerce')
@@ -185,9 +184,6 @@ def crear_hojas(wb, df_filtrado, df,  col_nave, col_trg, col_loa, col_servicio, 
                 if ceniza_soda>0:
                     ws.cell(row=16,column=7, value = "CENIZA DE SODA")
                     ws.cell(row=17, column=3, value=96)
-
-                #porque siempre cobre_met=0, cuando en ocasiones no lo es
-                #cobre metalico
                 
                 cobre_met = pd.to_numeric(row[col_cu_met], errors="coerce")
                 cobre_met = int(0 if pd.isna(cobre_met) else cobre_met)
@@ -319,9 +315,19 @@ def crear_hojas(wb, df_filtrado, df,  col_nave, col_trg, col_loa, col_servicio, 
 
                 ws.cell(row=45, column=2, value="MULTA TOM").border = border_horizontal
                 m_apl = ws.cell(row=45, column=3, value='=IF(C20=0,"Sin Revision",IF(C43<0,0,C44*C43*C42))')
-            
                 m_apl.number_format = formato_dec
                 m_apl.border = border_horizontal
+
+                ws.cell(row=49, column=2, value="MULTA TE").border = border_horizontal
+
+                m_apl1 = ws.cell(
+                    row=49,
+                    column=3,
+                    value='=IF(C13="","Sin Revision",IF(C13<6,"SIN MULTA",C8*C13*C38*0.02))'
+                )
+
+                m_apl1.number_format = formato_dec
+                m_apl1.border = border_horizontal
 
                 ws.cell(row=47, column=2, value="RENDIMIENTO").border = border_horizontal
                 rend = ws.cell(row=47, column= 3, value = "=C16/(C14-C20)")
@@ -333,6 +339,10 @@ def crear_hojas(wb, df_filtrado, df,  col_nave, col_trg, col_loa, col_servicio, 
                 
                 for celda in ws["B47:C47"][0]: 
                     celda.fill = relleno_celeste
+
+                for celda in ws["B49:C49"][0]: 
+                    celda.fill = relleno_gris
+                
 
                 # --- CONFIGURACIÓN DEL CUADRO BODEGAS  (F18:N27) ---
                 
@@ -360,8 +370,7 @@ def crear_hojas(wb, df_filtrado, df,  col_nave, col_trg, col_loa, col_servicio, 
                             celda_actual.font = fuente_datos
                             celda_actual.border = sin_bordes
 
-                #Revisar al parecer hay un error porque al abri excel envia un mensaje de error para reparar formula
-
+                
                 # 3. FÓRMULAS DE SUMA POR FILA (Columna N)
                 # Sumar desde la columna F (6) hasta la M (13) para cada fila
                 for r in range(19, 27): # Filas de datos (debajo del encabezado y sobre el total)

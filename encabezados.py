@@ -19,8 +19,10 @@ def crear_encabezados (ws_res, border_completo):
         "TOM",
         "TNT",
         "GAP",
-        "Multa Inicial",
+        "Multa TOM",
         "Ton",
+        "T.E",
+        "Multa TE",
         "Vel (ton/hr)",
         "TIPO DE CARGA"
     ]
@@ -40,9 +42,11 @@ def crear_encabezados (ws_res, border_completo):
     ws_res.column_dimensions['O'].width = 12
     ws_res.column_dimensions['P'].width = 10
     ws_res.column_dimensions['Q'].width = 10
-    ws_res.column_dimensions['R'].width = 35
+    ws_res.column_dimensions['R'].width = 10
+    ws_res.column_dimensions['S'].width = 10
+    ws_res.column_dimensions['T'].width = 35
 
-    for i, texto in enumerate(encabezados_res, start=2):  # B=2 hasta R=18
+    for i, texto in enumerate(encabezados_res, start=2):  # B=2 hasta T=20
         celda = ws_res.cell(row=1, column=i, value=texto)
         celda.font = Font(name="Aptos Narrow", size=10, bold=True)
         celda.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)

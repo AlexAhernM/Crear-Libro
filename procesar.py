@@ -8,6 +8,8 @@ from estilos import (formato_fecha, formato_dec, formato_entero,
                          border_horizontal, border_completo, relleno_gris)
 from encabezados import crear_encabezados, obtener_columnas
 from excel_sheets import crear_hojas
+from totales_res import crear_totales_res
+
 def procesar_datos(entry_archivo, entry_destino, entry_fin, entry_inicio):
     ruta_input = entry_archivo.get()
     fecha_ini_str = entry_inicio.get()
@@ -81,24 +83,26 @@ def procesar_datos(entry_archivo, entry_destino, entry_fin, entry_inicio):
                 col_tipo_nave, col_ton, col_cs, col_cu_met, col_break, col_zn, col_cu)
 
         referencias_res = [
-                            (2, None, None),          # Nº
-                            (3, "C3", None),          # Nave
-                            (4, "C6", None),          # Tipo Nave
-                            (5, "C8", formato_entero),
-                            (6, "C9", None),
-                            (7, "C11", formato_fecha),
-                            (8, "C12", formato_fecha),
-                            (9, "C14", formato_dec),
-                            (10, "C18", formato_dec),
-                            (11, "C17", formato_dec),
-                            (12, "C19", formato_dec),
-                            (13, "C20", formato_dec),
-                            (14, "C43", formato_dec),
-                            (15, "C45", formato_dec),
-                            (16, "C16", formato_entero),
-                            (17, "C47", formato_dec),
-                            (18, "G16", None),
-                        ]
+    (2, None, None),              # Nº
+    (3, "C3", None),              # Nave
+    (4, "C6", None),              # Tipo Nave
+    (5, "C8", formato_entero),    # TRG
+    (6, "C9", None),              # Sitio
+    (7, "C11", formato_fecha),    # Primera Espia
+    (8, "C12", formato_fecha),    # Ultima Espia
+    (9, "C14", formato_dec),      # T.O
+    (10, "C18", formato_dec),     # B. Dom
+    (11, "C17", formato_dec),     # F.Rend
+    (12, "C19", formato_dec),     # TOM
+    (13, "C20", formato_dec),     # TNT
+    (14, "C33", formato_dec),     # GAP
+    (15, "C45", formato_dec),     # Multa TOM
+    (16, "C16", formato_entero),  # Ton
+    (17, "C13", formato_dec),     # T.E
+    (18, "C49", formato_dec),     # Multa TE
+    (19, "C47", formato_dec),     # Vel (ton/hr)
+    (20, "G16", None),            # Tipo de carga
+]
         
         fila_res = 2
 
@@ -120,42 +124,18 @@ def procesar_datos(entry_archivo, entry_destino, entry_fin, entry_inicio):
             fila_res += 1
         ultima_fila_res = ws_res.max_row
 
-        # Fila donde irá el total
-        fila_total = ultima_fila_res + 2
-
-        ws_res.cell(row=fila_total, column=4, value="TOTALES")  # Columna D
-        ws_res.cell(row=fila_total, column=4).font = Font(name="Aptos Narrow", size=12, bold=True)
-        ws_res.cell(row=fila_total, column=4).alignment = Alignment(horizontal="right", vertical="center")
-
-        
-        for celda in ws_res[fila_total][3:16]: # Accede directamente a la fila 47, columnas D(1) y P(2)
-                celda.fill = relleno_gris
-                celda.border = border_horizontal
-                
-        ws_res.cell(row=fila_total, column=4).border = Border(left=Side(border_style="thin", color="000000"),
-                                                              top=Side(border_style="thin", color="000000"),
-                                                              bottom=Side(border_style="thin", color="000000"))
-
-        celda_total_multa = ws_res.cell(row=fila_total,column=15,value=f"=SUM(O2:O{ultima_fila_res})")
-        celda_total_multa.border = border_completo
-        celda_total_multa.number_format = formato_dec
-        celda_total_multa.font = Font(name="Aptos Narrow", size=12, bold=True)
-        celda_total_multa.alignment = Alignment(horizontal="center", vertical="center")
-
-        celda_total_ton = ws_res.cell(row=fila_total, column=16, value=f"=SUM(P2:P{ultima_fila_res})")
-        celda_total_ton.border = border_completo
-        celda_total_ton.number_format = formato_entero
-        celda_total_ton.font = Font(name="Aptos Narrow", size=12, bold=True)
-        celda_total_ton.alignment = Alignment(horizontal="center", vertical="center")
-
-        
+        crear_totales_res(ws_res=ws_res,ultima_fila_res=ultima_fila_res,formato_dec=formato_dec,formato_entero=formato_entero,
+                            border_completo=border_completo,
+                            border_horizontal=border_horizontal,
+                            relleno_gris=relleno_gris
+                        )
 
 
         for fila in ws_res.iter_rows(
             min_row=2,
             max_row=ultima_fila_res,
             min_col=2,   # B
-            max_col=18   # R
+            max_col=20   # R
         ):
             for celda in fila:
                 celda.border = border_completo
